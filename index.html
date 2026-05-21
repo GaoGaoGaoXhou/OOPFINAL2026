@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SWAIN Inc. — Car Sales POS</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- LOADER -->
+<div id="loader">
+  <div class="logo-big">SWAIN</div>
+  <div class="sub">INC. AUTOMOTIVE</div>
+  <div style="margin-top:12px;font-size:13px;color:var(--muted);">Initializing System...</div>
+  <div class="bar"><div class="bar-fill" id="loader-bar"></div></div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- NAV -->
+<nav id="nav">
+  <div class="nav-logo" onclick="showPage('store')">SWAIN<span> INC.</span></div>
+  <div class="nav-links" id="nav-links">
+    <a onclick="showPage('store')" data-page="store">Showroom</a>
+    <a onclick="showPage('store'); scrollToCars()" data-page="">Inventory</a>
+  </div>
+  <div class="nav-right" id="nav-right">
+    <button class="btn btn-outline btn-sm" onclick="showPage('login')">Sign In</button>
+    <button class="btn btn-gold btn-sm" onclick="showPage('register')">Register</button>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════════
+     STOREFRONT
+══════════════════════════════════════════════ -->
+<div class="page active" id="page-store">
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-grid"></div>
+    <div class="hero-content">
+      <div class="hero-badge">🏆 Philippines' Premier Automotive</div>
+      <div class="hero-title">SWAIN<br><span>INC.</span></div>
+      <div class="hero-stripe"></div>
+      <div class="hero-sub">Drive excellence. Own distinction. Every vehicle a statement.</div>
+      <div class="hero-actions">
+        <button class="btn btn-gold" onclick="scrollToCars()">Browse Inventory</button>
+        <button class="btn btn-outline" onclick="showPage('login')">Sign In to Purchase</button>
+      </div>
+    </div>
+  </div>
+  <!-- Cars -->
+  <div class="section" id="inventory-section">
+    <div class="section-title">Our Inventory</div>
+    <div class="section-sub">Select a vehicle to configure and purchase</div>
+    <div class="filters" id="store-filters">
+      <button class="filter-btn active" onclick="filterCars('all',this)">All Vehicles</button>
+      <button class="filter-btn" onclick="filterCars('Sedan',this)">Sedan</button>
+      <button class="filter-btn" onclick="filterCars('SUV',this)">SUV</button>
+      <button class="filter-btn" onclick="filterCars('Truck',this)">Truck</button>
+      <button class="filter-btn" onclick="filterCars('Sports',this)">Sports</button>
+      <button class="filter-btn" onclick="filterCars('Luxury',this)">Luxury</button>
+    </div>
+    <div class="cars-grid" id="cars-grid"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     LOGIN
+══════════════════════════════════════════════ -->
+<div class="page" id="page-login">
+  <div class="login-wrap">
+    <div class="login-logo">SWAIN</div>
+    <div class="login-tagline">INC. Automotive — Portal</div>
+    <div class="login-box">
+      <div class="login-title">Welcome Back</div>
+      <div class="login-sub">Sign in to your account. Role is detected automatically.</div>
+      <div class="login-error" id="login-error">Invalid username or password.</div>
+      <div class="form-group">
+        <label class="form-label">Username or Email</label>
+        <input class="form-input" type="text" id="login-user" placeholder="Enter username..." autocomplete="username">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input class="form-input" type="password" id="login-pass" placeholder="Enter password..." autocomplete="current-password">
+      </div>
+      <button class="btn btn-gold btn-full" onclick="doLogin()" style="margin-top:8px;">Sign In</button>
+      <div class="divider"></div>
+      <div style="text-align:center;font-size:12px;color:var(--muted);">
+        Auto sorts user to correct dashboard based on role. <br>
+      </div>
+    </div>
+    <div class="login-footer">
+      Don't have an account? <a class="link" onclick="showPage('register')">Create one free</a><br>
+      <a class="link" onclick="showPage('store')" style="margin-top:8px;display:inline-block;">← Back to Showroom</a>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     REGISTER
+══════════════════════════════════════════════ -->
+<div class="page" id="page-register">
+  <div class="login-wrap" style="max-width:500px;">
+    <div class="login-logo">SWAIN</div>
+    <div class="login-tagline">Create Your Account</div>
+    <div class="login-box">
+      <div class="login-title">Customer Registration</div>
+      <div class="login-sub">Join SWAIN Inc. to browse, customize, and purchase vehicles.</div>
+      <div class="login-error" id="reg-error"></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">First Name</label><input class="form-input" id="reg-fname" placeholder="Juan"></div>
+        <div class="form-group"><label class="form-label">Last Name</label><input class="form-input" id="reg-lname" placeholder="dela Cruz"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Email</label><input class="form-input" type="email" id="reg-email" placeholder="juan@email.com"></div>
+      <div class="form-group"><label class="form-label">Username</label><input class="form-input" id="reg-uname" placeholder="juan123"></div>
+      <div class="form-group"><label class="form-label">Phone</label><input class="form-input" id="reg-phone" placeholder="+63 9XX XXX XXXX"></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Password</label><input class="form-input" type="password" id="reg-pass" placeholder="Min 6 characters"></div>
+        <div class="form-group"><label class="form-label">Confirm Password</label><input class="form-input" type="password" id="reg-cpass" placeholder="Repeat password"></div>
+      </div>
+      <button class="btn btn-gold btn-full" onclick="doRegister()" style="margin-top:8px;">Create Account</button>
+    </div>
+    <div class="login-footer">Already have an account? <a class="link" onclick="showPage('login')">Sign In</a></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     DASHBOARD (ALL ROLES)
+══════════════════════════════════════════════ -->
+<div class="page" id="page-dashboard">
+  <div class="dash-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div id="sidebar-menu"></div>
+    </aside>
+    <!-- Content -->
+    <main class="dash-content">
+      <!-- OVERVIEW -->
+      <div class="dash-panel active" id="panel-overview">
+        <div class="dash-header"><h2>Overview</h2><p id="overview-desc"></p></div>
+        <div class="stats-grid" id="stats-grid"></div>
+        <div class="table-wrap">
+          <div class="table-header"><h3>Recent Orders</h3></div>
+          <table><thead><tr><th>Order #</th><th>Customer</th><th>Vehicle</th><th>Total</th><th>Status</th><th>Date</th></tr></thead>
+          <tbody id="recent-orders"></tbody></table>
+        </div>
+      </div>
+
+      <!-- POS TERMINAL -->
+      <div class="dash-panel" id="panel-pos">
+        <div class="dash-header"><h2>POS Terminal</h2><p>Process a vehicle sale</p></div>
+        <div class="pos-layout">
+          <div class="pos-products">
+            <input class="search-input" placeholder="Search vehicles..." id="pos-search" oninput="renderPOSProducts()" style="margin-bottom:16px;width:100%;">
+            <div class="cars-grid" id="pos-products-grid"></div>
+          </div>
+          <div class="pos-cart">
+            <div class="cart-title">Current Sale</div>
+            <div>
+              <label class="form-label">Customer</label>
+              <select class="form-input" id="pos-customer-select"><option value="">Walk-in Customer</option></select>
+            </div>
+            <div class="cart-items" id="cart-items"><div class="cart-empty">No items added</div></div>
+            <div class="cart-totals" id="cart-totals" style="display:none;">
+              <div class="cart-row"><span class="lbl">Subtotal</span><span id="cart-sub">₱0</span></div>
+              <div class="cart-row"><span class="lbl">Tax (12% VAT)</span><span id="cart-tax">₱0</span></div>
+              <div class="cart-row"><span class="lbl">Discount</span><span id="cart-disc">₱0</span></div>
+              <div class="cart-row total"><span>TOTAL</span><span id="cart-total">₱0</span></div>
+            </div>
+            <div>
+              <label class="form-label">Payment Method</label>
+              <select class="form-input" id="payment-method">
+                <option value="Cash">Cash</option>
+                <option value="Card">Credit/Debit Card</option>
+                <option value="Bank Transfer">Bank Transfer</option>
+                <option value="Installment">Installment</option>
+              </select>
+            </div>
+            <div id="cashier-discount-div">
+              <label class="form-label">Discount (%)</label>
+              <input class="form-input" type="number" id="discount-input" value="0" min="0" max="30" oninput="updateCartTotals()">
+            </div>
+            <button class="btn btn-gold btn-full" onclick="processCheckout()">Process Payment</button>
+            <button class="btn btn-ghost btn-full btn-sm" onclick="clearCart()">Clear Cart</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- INVENTORY -->
+      <div class="dash-panel" id="panel-inventory">
+        <div class="dash-header"><h2>Inventory</h2><p>Manage vehicle stock</p></div>
+        <div class="table-wrap">
+          <div class="table-header">
+            <h3>Vehicles</h3>
+            <button class="btn btn-gold btn-sm" onclick="openCarModal()">+ Add Vehicle</button>
+          </div>
+          <table><thead><tr><th>ID</th><th>Model</th><th>Type</th><th>Price</th><th>Stock</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="inventory-table"></tbody></table>
+        </div>
+      </div>
+
+      <!-- ORDERS -->
+      <div class="dash-panel" id="panel-orders">
+        <div class="dash-header"><h2>Orders</h2><p>All sales transactions</p></div>
+        <div class="table-wrap">
+          <div class="table-header">
+            <h3>Sales History</h3>
+            <input class="search-input" placeholder="Search orders..." id="orders-search" oninput="renderOrdersTable()">
+          </div>
+          <table><thead><tr><th>Order #</th><th>Customer</th><th>Vehicle</th><th>Amount</th><th>Payment</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+          <tbody id="orders-table"></tbody></table>
+        </div>
+      </div>
+
+      <!-- USERS (ADMIN) -->
+      <div class="dash-panel" id="panel-users">
+        <div class="dash-header"><h2>User Management</h2><p>Control system access</p></div>
+        <div class="table-wrap">
+          <div class="table-header">
+            <h3>All Users</h3>
+            <button class="btn btn-gold btn-sm" onclick="openUserModal()">+ Add User</button>
+          </div>
+          <table><thead><tr><th>ID</th><th>Name</th><th>Username</th><th>Email</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="users-table"></tbody></table>
+        </div>
+      </div>
+
+      <!-- REPORTS -->
+      <div class="dash-panel" id="panel-reports">
+        <div class="dash-header"><h2>Reports</h2><p>Business analytics</p></div>
+        <div class="stats-grid" id="report-stats"></div>
+        <div class="table-wrap" style="margin-top:20px;">
+          <div class="table-header"><h3>Sales by Vehicle Type</h3></div>
+          <table><thead><tr><th>Type</th><th>Units Sold</th><th>Revenue</th><th>Avg Price</th></tr></thead>
+          <tbody id="report-type-table"></tbody></table>
+        </div>
+        <div class="table-wrap" style="margin-top:16px;">
+          <div class="table-header"><h3>Top Performing Vehicles</h3></div>
+          <table><thead><tr><th>Vehicle</th><th>Units Sold</th><th>Revenue</th></tr></thead>
+          <tbody id="report-top-table"></tbody></table>
+        </div>
+      </div>
+
+      <!-- MY ORDERS (CUSTOMER) -->
+      <div class="dash-panel" id="panel-my-orders">
+        <div class="dash-header"><h2>My Orders</h2><p>Track your purchases</p></div>
+        <div class="table-wrap">
+          <div class="table-header"><h3>Order History</h3></div>
+          <table><thead><tr><th>Order #</th><th>Vehicle</th><th>Customization</th><th>Total</th><th>Payment</th><th>Status</th><th>Date</th></tr></thead>
+          <tbody id="my-orders-table"></tbody></table>
+        </div>
+      </div>
+
+      <!-- BROWSE (CUSTOMER) -->
+      <div class="dash-panel" id="panel-browse">
+        <div class="dash-header"><h2>Browse & Configure</h2><p>Select and customize your vehicle</p></div>
+        <div class="filters" id="browse-filters">
+          <button class="filter-btn active" onclick="filterBrowse('all',this)">All</button>
+          <button class="filter-btn" onclick="filterBrowse('Sedan',this)">Sedan</button>
+          <button class="filter-btn" onclick="filterBrowse('SUV',this)">SUV</button>
+          <button class="filter-btn" onclick="filterBrowse('Truck',this)">Truck</button>
+          <button class="filter-btn" onclick="filterBrowse('Sports',this)">Sports</button>
+          <button class="filter-btn" onclick="filterBrowse('Luxury',this)">Luxury</button>
+        </div>
+        <div class="cars-grid" id="browse-grid"></div>
+      </div>
+
+      <!-- PROFILE -->
+      <div class="dash-panel" id="panel-profile">
+        <div class="dash-header"><h2>My Profile</h2><p>Account settings</p></div>
+        <div class="login-box" style="max-width:500px;">
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">First Name</label><input class="form-input" id="prof-fname"></div>
+            <div class="form-group"><label class="form-label">Last Name</label><input class="form-input" id="prof-lname"></div>
+          </div>
+          <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="prof-email"></div>
+          <div class="form-group"><label class="form-label">Phone</label><input class="form-input" id="prof-phone"></div>
+          <div class="divider"></div>
+          <div class="form-group"><label class="form-label">New Password (leave blank to keep)</label><input class="form-input" type="password" id="prof-pass" placeholder="New password..."></div>
+          <button class="btn btn-gold" onclick="saveProfile()">Save Changes</button>
+        </div>
+      </div>
+
+      <!-- SETTINGS (ADMIN) -->
+      <div class="dash-panel" id="panel-settings">
+        <div class="dash-header"><h2>System Settings</h2><p>Configure system parameters</p></div>
+        <div class="login-box" style="max-width:500px;">
+          <div class="form-group"><label class="form-label">Company Name</label><input class="form-input" id="set-company" value="SWAIN Inc."></div>
+          <div class="form-group"><label class="form-label">VAT Rate (%)</label><input class="form-input" type="number" id="set-tax" value="12"></div>
+          <div class="form-group"><label class="form-label">Max Cashier Discount (%)</label><input class="form-input" type="number" id="set-maxdisc" value="10"></div>
+          <div class="form-group"><label class="form-label">Currency Symbol</label><input class="form-input" id="set-currency" value="₱"></div>
+          <button class="btn btn-gold" onclick="saveSettings()">Save Settings</button>
+        </div>
+        <div class="table-wrap" style="margin-top:24px;">
+          <div class="table-header"><h3>Activity Log</h3></div>
+          <table><thead><tr><th>Time</th><th>User</th><th>Action</th></tr></thead>
+          <tbody id="log-table"></tbody></table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- ═══════════ MODALS ═══════════ -->
+
+<!-- Car Modal -->
+<div class="modal-overlay" id="car-modal">
+  <div class="modal" style="max-width:600px;">
+    <div class="modal-header">
+      <div class="modal-title" id="car-modal-title">Add Vehicle</div>
+      <button class="modal-close" onclick="closeModal('car-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="car-id">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Model Name</label><input class="form-input" id="car-model" placeholder="e.g. Toyota Vios 2025"></div>
+        <div class="form-group"><label class="form-label">Type</label>
+          <select class="form-input" id="car-type">
+            <option>Sedan</option><option>SUV</option><option>Truck</option><option>Sports</option><option>Luxury</option><option>Van</option><option>Electric</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Base Price (₱)</label><input class="form-input" type="number" id="car-price" placeholder="0"></div>
+        <div class="form-group"><label class="form-label">Stock</label><input class="form-input" type="number" id="car-stock" placeholder="1"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Engine</label><input class="form-input" id="car-engine" placeholder="e.g. 2.0L Turbo"></div>
+        <div class="form-group"><label class="form-label">Transmission</label>
+          <select class="form-input" id="car-trans"><option>Automatic</option><option>Manual</option><option>CVT</option></select>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Description</label><input class="form-input" id="car-desc" placeholder="Short description..."></div>
+      <div class="form-group"><label class="form-label">Emoji Icon</label><input class="form-input" id="car-emoji" placeholder="🚗" style="font-size:20px;"></div>
+      <div class="gap-8" style="margin-top:16px;">
+        <button class="btn btn-gold" onclick="saveCar()">Save Vehicle</button>
+        <button class="btn btn-ghost" onclick="closeModal('car-modal')">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- User Modal -->
+<div class="modal-overlay" id="user-modal">
+  <div class="modal" style="max-width:500px;">
+    <div class="modal-header">
+      <div class="modal-title" id="user-modal-title">Add User</div>
+      <button class="modal-close" onclick="closeModal('user-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="user-id">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">First Name</label><input class="form-input" id="user-fname"></div>
+        <div class="form-group"><label class="form-label">Last Name</label><input class="form-input" id="user-lname"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Username</label><input class="form-input" id="user-uname"></div>
+      <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="user-email"></div>
+      <div class="form-group"><label class="form-label">Phone</label><input class="form-input" id="user-phone"></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Role</label>
+          <select class="form-input" id="user-role">
+            <option value="customer">Customer</option>
+            <option value="cashier">Cashier</option>
+            <option value="manager">Manager</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Status</label>
+          <select class="form-input" id="user-status">
+            <option value="active">Active</option><option value="inactive">Inactive</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Password</label><input class="form-input" type="password" id="user-pass" placeholder="Leave blank to keep current"></div>
+      <div class="gap-8" style="margin-top:16px;">
+        <button class="btn btn-gold" onclick="saveUser()">Save User</button>
+        <button class="btn btn-ghost" onclick="closeModal('user-modal')">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Customize Modal -->
+<div class="modal-overlay" id="customize-modal">
+  <div class="modal" style="max-width:680px;">
+    <div class="modal-header">
+      <div class="modal-title" id="cust-title">Configure Vehicle</div>
+      <button class="modal-close" onclick="closeModal('customize-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:grid;grid-template-columns:1fr 240px;gap:24px;">
+        <div>
+          <!-- Color -->
+          <div class="form-group">
+            <label class="form-label">Exterior Color</label>
+            <div class="customize-grid" id="color-options"></div>
+          </div>
+          <!-- Wheels -->
+          <div class="form-group">
+            <label class="form-label">Wheel Package</label>
+            <div style="display:flex;flex-direction:column;gap:8px;" id="wheel-options"></div>
+          </div>
+          <!-- Interior -->
+          <div class="form-group">
+            <label class="form-label">Interior Package</label>
+            <div style="display:flex;flex-direction:column;gap:8px;" id="interior-options"></div>
+          </div>
+          <!-- Addons -->
+          <div class="form-group">
+            <label class="form-label">Add-Ons</label>
+            <div style="display:flex;flex-direction:column;gap:6px;" id="addon-options"></div>
+          </div>
+        </div>
+        <!-- Summary -->
+        <div>
+          <div style="background:var(--panel);border-radius:var(--radius);padding:16px;position:sticky;top:0;">
+            <div style="font-size:48px;text-align:center;margin-bottom:8px;" id="cust-emoji">🚗</div>
+            <div style="font-weight:700;font-size:15px;text-align:center;margin-bottom:4px;" id="cust-model"></div>
+            <div class="divider"></div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">Base Price</div>
+            <div style="font-size:16px;font-weight:600;color:var(--accent);margin-bottom:16px;" id="cust-base"></div>
+            <div id="cust-extras-list"></div>
+            <div class="divider"></div>
+            <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">TOTAL</div>
+            <div style="font-size:22px;font-weight:700;color:var(--accent);" id="cust-total"></div>
+          </div>
+        </div>
+      </div>
+      <div class="form-group" style="margin-top:16px;">
+        <label class="form-label">Payment Method</label>
+        <select class="form-input" id="cust-payment">
+          <option value="Cash">Cash</option>
+          <option value="Card">Credit/Debit Card</option>
+          <option value="Bank Transfer">Bank Transfer</option>
+          <option value="Installment">Installment</option>
+        </select>
+      </div>
+      <div class="gap-8" style="margin-top:16px;">
+        <button class="btn btn-gold" onclick="placeCustomerOrder()">Place Order</button>
+        <button class="btn btn-ghost" onclick="closeModal('customize-modal')">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Receipt Modal -->
+<div class="modal-overlay" id="receipt-modal">
+  <div class="modal" style="max-width:460px;">
+    <div class="modal-header">
+      <div class="modal-title">✅ Payment Complete</div>
+      <button class="modal-close" onclick="closeModal('receipt-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="receipt-box" id="receipt-content"></div>
+      <div class="gap-8" style="margin-top:16px;">
+        <button class="btn btn-gold" onclick="printReceipt()">🖨 Print Receipt</button>
+        <button class="btn btn-ghost" onclick="closeModal('receipt-modal')">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Order Status Modal -->
+<div class="modal-overlay" id="order-status-modal">
+  <div class="modal" style="max-width:400px;">
+    <div class="modal-header">
+      <div class="modal-title">Update Order Status</div>
+      <button class="modal-close" onclick="closeModal('order-status-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="status-order-id">
+      <div class="form-group">
+        <label class="form-label">Order #</label>
+        <div id="status-order-num" style="font-weight:600;color:var(--accent);"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">New Status</label>
+        <select class="form-input" id="status-select">
+          <option value="Pending">Pending</option>
+          <option value="Processing">Processing</option>
+          <option value="Completed">Completed</option>
+          <option value="Cancelled">Cancelled</option>
+        </select>
+      </div>
+      <div class="gap-8">
+        <button class="btn btn-gold" onclick="updateOrderStatus()">Update</button>
+        <button class="btn btn-ghost" onclick="closeModal('order-status-modal')">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Print Invoice Area (hidden on screen, visible only when printing) -->
+<div id="print-area"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
